@@ -129,7 +129,7 @@ Returns:
 Modify:
   2018-07-03
 """
-
+"""
 class downloader(object):
 
 	def __init__(self):
@@ -138,7 +138,7 @@ class downloader(object):
 		self.names = []
 		self.urls = []
 		self.nums = 0
-	"""
+	
 	函数说明：获取下载链接
 	Parameters:
      无
@@ -146,7 +146,7 @@ class downloader(object):
      无
     Modify:
        2018-07-03
-	"""
+	
 	def get_download_url(self):
 		req = requests.get(url = self.target)
 		html = req.text
@@ -159,7 +159,7 @@ class downloader(object):
 			self.names.append(each.string)
 			self.urls.append(self.server + each.get('href'))
 
-	"""
+	
 		函数说明：获取章节内容
 		Parameters:
 	      target - 下载链接（string）
@@ -167,7 +167,7 @@ class downloader(object):
 	      texts - 章节内容（string）
 	    Modify:
 	       2018-07-03
-	"""
+	
 	def get_contents(self, target):
 		req = requests.get(url = target)
 		html = req.text
@@ -176,7 +176,7 @@ class downloader(object):
 		texts = texts[0].text.replace('\xa0'* 8, '\n\n')
 		return texts
 
-	"""
+	
 			函数说明：将爬取的内容写入文件
 			Parameters:
 		      name - 章节名称（string）
@@ -186,7 +186,7 @@ class downloader(object):
 		       无
 		    Modify:
 		       2018-07-03
-	"""
+	
 
 	def write(self, name, path, text):
 		write_flag = True
@@ -205,3 +205,95 @@ if __name__ == '__main__':
 		sys.stdout.write("    已下载：%.3f%%" % float(i/dl.nums*100) + '\r')
 		sys.stdout.flush()
 	print(' 《一念永恒》 下载完成！！')
+"""
+import requests
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+import re, os, lxml
+
+browser = webdriver.Chrome()
+# 设置网站等待时间
+wait = WebDriverWait(browser, 10)
+
+
+def get_one(url):
+	print('正在爬取...')
+	try:
+		browser.get(url)
+		html = browser.page_source
+		if html:
+			return html
+	except EOFError:
+		return None
+
+
+def pares_one(html):
+	soup = BeautifulSoup(html, 'lxml')
+	imgs = soup.select('img')
+	url = soup.select('#body #comments .comments .cp-pagenavi a')[1]
+	href = re.findall('href="(.*?)"', str(url))
+	next_url = 'https:' + href[0]
+
+	count = 0
+	for img in imgs:
+		img_url = re.findall('src="(.*?)"', str(img))
+		if not img_url[0][-3:] == 'gif':
+			if not img_url[0][-3:] == 'png':
+				print('正在下载：%s 第 %s 张' % (img_url[0], count))
+				write_fo_file(img_url[0], '0.0', count)
+		count += 1
+	return next_url
+
+
+def pares_one_of_num(html):
+	soup = BeautifulSoup(html, 'lxml')
+	imgs = soup.select('img')
+
+	num = soup.select('#body #comments .comments .page-meter-title')[0].getText()
+	percent = re.findall('\d+', num)
+	url = soup.select('#body #comments .comments .cp-pagenavi a')[1]
+	href = re.find_all('href="(.*?)"', str(url))
+	percent_num = percent[0] + '.' + percent[1]
+	next_url = 'https:' + href[0]
+
+	count = 0
+	for img in imgs:
+		img_url = re.find_all('src="(.*?)"', str(img))
+		if not img_url[0][-3:] == 'gif':
+			if not img_url[0][-3:] == 'png':
+				if img_url[0][-3:]:
+					print('正在下载：%s 第 %s 张' % (img_url[0], count))
+					write_fo_file(img_url[0], percent_num, count)
+		count += 1
+	return percent_num, next_url
+
+
+def write_fo_file(url, num, count):
+	dirName = u'{}/{}'.format('jiandan', num)
+	#print(url)
+	if not os.path.exists(dirName):
+		os.makedirs(dirName)
+		#print(dirName)
+	filename = '%s/%s/%s.jpg' % (os.path.abspath('.'), dirName, count)
+	#print(filename)
+	with open(filename, 'wb+') as jpg:
+		jpg.write(requests.get(url).content)
+
+
+def next(url):
+	html = get_one(url)
+	percent_num, next_url = pares_one_of_num(html)
+	while percent_num != '100.0':
+		next(next_url)
+
+
+def main():
+	url = 'http://jandan.net/ooxx/page-50689418#comments'
+	html = get_one(url)
+	next_url = pares_one(html)
+	next(next_url)
+
+
+if __name__ == '__main__':
+	main()
