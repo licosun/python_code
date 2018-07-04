@@ -64,7 +64,7 @@ import time
 
 
 def open_web(sum):
-    req_url = "https://u.uat.7atour.com/usercenter/login?return=https%3A%2F%2Fwww.uat.7atour.com%2F"
+    req_url = "https://u.uat.xxx.com/usercenter/login?return=https%3A%2F%2Fwww.uat.7atour.com%2F"
     # 打开浏览器
     browser = webdriver.Chrome()
     browser.maximize_window()
