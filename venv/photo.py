@@ -264,7 +264,7 @@ d = {"remote_addr": "121.8.243.139", "request": "GET /css/common__f13e01879d.css
 	 "tags": ["www_test1", "beats_input_codec_json_applied"], "remote_user": "-", "request_time": "0.021",
 	 "@timestamp": "2018-07-05T08:27:18.972Z", "http_x_forwarded_for": "-", "@version": "1",
 	 "beat": {"name": "dev-nginx", "hostname": "dev-nginx", "version": "6.2.2"}, "host": "dev-nginx",
-	 "http_referrer": "http://www.xx.ww.com/macaohkset/list", "time": "05/Jul/2018:11:32:56 +0800",
+	 "http_referrer": "http://www.xx.ww(hidden).com/macaohkset/list", "time": "05/Jul/2018:11:32:56 +0800",
 	 "status": "200"}
 
 lt = []  # 定义一个列表接收解析数据
