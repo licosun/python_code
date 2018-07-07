@@ -206,94 +206,86 @@ if __name__ == '__main__':
 		sys.stdout.flush()
 	print(' 《一念永恒》 下载完成！！')
 """
-import requests
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-import re, os, lxml
+# -*- coding: utf-8 -*-
+"""
+遍历某路径下所有文件夹，获得特定文件夹下所有文件
+很暴力，真的遍历了所有的文件夹
+20180124
+@author: 墨大宝
 
-browser = webdriver.Chrome()
-# 设置网站等待时间
-wait = WebDriverWait(browser, 10)
+import os,re
 
+TARGETPATH = r'D:\MODIS_DATA'
+records = []
+for currentDir, _, includedFiles in os.walk(TARGETPATH):
+    #if not currentDir.endswith(r'_BAD'): continue
+	if not re.compile(r'_BAD'):continue
 
-def get_one(url):
-	print('正在爬取...')
-	try:
-		browser.get(url)
-		html = browser.page_source
-		if html:
-			return html
-	except EOFError:
-		return None
+    else:
+        records.append(currentDir)# 将以“_BAD”结尾的文件夹名加入records
+        records.extend(includedFiles)  # 将该文件夹内的文件名列表扩展到records
 
+# 将records写入.txt
+print(records)
+txtFile = open(os.path.join(TARGETPATH, '02_04.txt'), 'w')
+txtFile.write(os.linesep.join(records))
+txtFile.close()
 
-def pares_one(html):
-	soup = BeautifulSoup(html, 'lxml')
-	imgs = soup.select('img')
-	url = soup.select('#body #comments .comments .cp-pagenavi a')[1]
-	href = re.findall('href="(.*?)"', str(url))
-	next_url = 'https:' + href[0]
+# 将排序后的records写入.txt
+with open(os.path.join(TARGETPATH, '02_04_BAD_SORTED.txt'), 'w') as txtFile:
+    txtFile.write('\n'.join(sorted(records)))
+"""
+'''
+import os
+import sys
+import re
 
-	count = 0
-	for img in imgs:
-		img_url = re.findall('src="(.*?)"', str(img))
-		if not img_url[0][-3:] == 'gif':
-			if not img_url[0][-3:] == 'png':
-				print('正在下载：%s 第 %s 张' % (img_url[0], count))
-				write_fo_file(img_url[0], '0.0', count)
-		count += 1
-	return next_url
+#根据文件夹 截取文件名称
+def getFileList(path ):
+   for root, dirs, names  in os.walk(path):
+       pattern = re.compile(r'_BAD')#将正则表达式设置成pattern对象
+       for filename in names:
+           if pattern.search(filename): #判断filename中是否包含XX，如果包含，则返回true
+               print(filename)  #打印
 
-
-def pares_one_of_num(html):
-	soup = BeautifulSoup(html, 'lxml')
-	imgs = soup.select('img')
-
-	num = soup.select('#body #comments .comments .page-meter-title')[0].getText()
-	percent = re.findall('\d+', num)
-	url = soup.select('#body #comments .comments .cp-pagenavi a')[1]
-	href = re.find_all('href="(.*?)"', str(url))
-	percent_num = percent[0] + '.' + percent[1]
-	next_url = 'https:' + href[0]
-
-	count = 0
-	for img in imgs:
-		img_url = re.find_all('src="(.*?)"', str(img))
-		if not img_url[0][-3:] == 'gif':
-			if not img_url[0][-3:] == 'png':
-				if img_url[0][-3:]:
-					print('正在下载：%s 第 %s 张' % (img_url[0], count))
-					write_fo_file(img_url[0], percent_num, count)
-		count += 1
-	return percent_num, next_url
-
-
-def write_fo_file(url, num, count):
-	dirName = u'{}/{}'.format('jiandan', num)
-	#print(url)
-	if not os.path.exists(dirName):
-		os.makedirs(dirName)
-		#print(dirName)
-	filename = '%s/%s/%s.jpg' % (os.path.abspath('.'), dirName, count)
-	#print(filename)
-	with open(filename, 'wb+') as jpg:
-		jpg.write(requests.get(url).content)
-
-
-def next(url):
-	html = get_one(url)
-	percent_num, next_url = pares_one_of_num(html)
-	while percent_num != '100.0':
-		next(next_url)
-
-
-def main():
-	url = 'http://jandan.net/ooxx/page-50689418#comments'
-	html = get_one(url)
-	next_url = pares_one(html)
-	next(next_url)
 
 
 if __name__ == '__main__':
-	main()
+    path =r'D:\MODIS_DATA'
+
+    getFileList(path)
+'''
+
+d = {"remote_addr": "121.8.243.139", "request": "GET /css/common__f13e01879d.css HTTP/1.1",
+	 "geoip": {"country_name": "China", "country_code2": "CN", "city_name": "Guangzhou", "region_name": "Guangdong"},
+	 "offset": 142255, "body_bytes_sent": "8811", "prospector": {"type": "log"}, "request_method": "GET",
+	 "source": "/opt/log/nginx/www.test1_access.log",
+	 "http_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36",
+	 "tags": ["www_test1", "beats_input_codec_json_applied"], "remote_user": "-", "request_time": "0.021",
+	 "@timestamp": "2018-07-05T08:27:18.972Z", "http_x_forwarded_for": "-", "@version": "1",
+	 "beat": {"name": "dev-nginx", "hostname": "dev-nginx", "version": "6.2.2"}, "host": "dev-nginx",
+	 "http_referrer": "http://www.test1.7atour.com/macaohkset/list", "time": "05/Jul/2018:11:32:56 +0800",
+	 "status": "200"}
+
+lt = []  # 定义一个列表接收解析数据
+
+s = d.get('status')  # 获取状态用于判断是否需要
+
+if s == "200":  # 判断数据是否需要解析
+	# print(d.values())
+	for y in d:
+		if type(d[y]) == dict:  # 判断json内嵌为字典则取值
+			for k in d[y]:
+				lt.append(d[y][k])
+
+		elif type(d[y]) == list:  # 判断json内嵌为列表则取值
+			for i in d[y]:
+				lt.append(i)
+
+		else:
+			lt.append(d[y])
+
+else:
+	print("d[geoip]")
+
+print(lt)
