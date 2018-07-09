@@ -256,36 +256,43 @@ if __name__ == '__main__':
     getFileList(path)
 '''
 
-d = {"remote_addr": "121.8.243.139", "request": "GET /css/common__f13e01879d.css HTTP/1.1",
-	 "geoip": {"country_name": "China", "country_code2": "CN", "city_name": "Guangzhou", "region_name": "Guangdong"},
-	 "offset": 142255, "body_bytes_sent": "8811", "prospector": {"type": "log"}, "request_method": "GET",
-	 "source": "/opt/log/nginx/www.test1_access.log",
-	 "http_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36",
-	 "tags": ["www_test1", "beats_input_codec_json_applied"], "remote_user": "-", "request_time": "0.021",
-	 "@timestamp": "2018-07-05T08:27:18.972Z", "http_x_forwarded_for": "-", "@version": "1",
-	 "beat": {"name": "dev-nginx", "hostname": "dev-nginx", "version": "6.2.2"}, "host": "dev-nginx",
-	 "http_referrer": "http://www.xx.ww(hidden).com/macaohkset/list", "time": "05/Jul/2018:11:32:56 +0800",
-	 "status": "200"}
 
-lt = []  # 定义一个列表接收解析数据
+import hdfs
+import os
+import json
+import json, time, re
+from hdfs.client import Client
 
-s = d.get('status')  # 获取状态用于判断是否需要
 
-if s == "200":  # 判断数据是否需要解析
-	# print(d.values())
-	for y in d:
-		if type(d[y]) == dict:  # 判断json内嵌为字典则取值
-			for k in d[y]:
-				lt.append(d[y][k])
+client = Client("http://IP:50070")
+data = time.strftime("%Y-%m-%d")
+filepath = ("/nginx_log/www_test1-%s.log" % data)
+#print(filepath)
+dirname = "/nginx_log/"
 
-		elif type(d[y]) == list:  # 判断json内嵌为列表则取值
-			for i in d[y]:
-				lt.append(i)
+TARGETPATH = r'D:\targeFile'
+with client.read(filepath, encoding='utf-8' ) as f:
+    for l in f:
+        d = json.loads(l)
+       # lines.append(l.strip())
+       # d = json.loads(l)
+        lt =[]
+        s = d.get('status')
+        if s == "200":
+           #print(d.values())
+           for y in d:
+               if type(d[y]) == dict:
+                   for k in d[y]:
+                       lt.append(d[y][k])
+               elif type(d[y]) == list:
+                   for i in d[y]:
+                       lt.append(i)
+               else:
+                   lt.append(d[y])
+           print(lt)
+           with open(os.path.join(TARGETPATH, '1212.txt'), 'a+') as file:
+               file.write(str(lt)+ '\n')
 
-		else:
-			lt.append(d[y])
-
-else:
-	print("d[geoip]")
-
-print(lt)
+       # else:
+       #     print("None")
+        #print(lt)
