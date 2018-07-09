@@ -296,3 +296,28 @@ with client.read(filepath, encoding='utf-8' ) as f:
        # else:
        #     print("None")
         #print(lt)
+
+
+"""
+数据3des加密模块
+"""
+
+def des_name(name, key):
+
+	while len(name) < 24:  # 判断name的长度是否24位，不足则补零
+		name += str(0)
+
+	dc = b'name' + b'key'     # 将加密数据转换为字节
+	k = des(b"DESCRYPT", CBC, b"\0\0\0\0\0\0\0\0", pad=None, padmode=PAD_PKCS5)    # 3des加密算法方式
+	d = k.encrypt(dc)
+	print("Encrypted: %r" % d)
+	print("Decrypted: %r" % k.decrypt(d))
+
+	result = base64.b64encode(d)    # 将3des加密为base64方式
+	print(result)
+
+
+if __name__ == '__main__':
+	names = "15902029717"
+	passWord = "123456abc"
+	des_name(names, passWord)
